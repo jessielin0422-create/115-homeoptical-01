@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專業無紙化驗光紀錄系統</title>
+    <style>
+        /* 1. 基礎設定與字體 */
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 2. 主卡片容器 */
+        .record-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* 頂部狀態提醒列 */
+        .status-bar {
+            background: #e9ecef;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            transition: 0.3s;
+        }
+
+        /* 區塊標題樣式 */
+        h3 {
+            margin-top: 0;
+            color: #333;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+            font-size: 1.2em;
+        }
+
+        h4 {
+            margin: 10px 0;
+            color: #555;
+            text-align: center;
+        }
+
+        .card-section {
+            padding: 25px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 0;
+        }
+
+        /* 3. 網格排版系統 */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .col-33 { flex: 1; min-width: 250px; }
+        .col-50 { flex: 1; min-width: 300px; }
+
+        /* 輸入框樣式 */
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        /* 驗光數據專用樣式 */
+        .eye-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 4. 按鈕群組 */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            padding: 0 25px 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: 0.2s;
+        }
+
+        .save-btn { background: #28a745; color: white; }
+        .save-btn:hover { background: #218838; }
+
+        .search-btn { background: #007bff; color: white; }
+        .search-btn:hover { background: #0069d9; }
+
+        /* 5. 歷史紀錄表格 */
+        .history-list {
+            padding: 25px;
+            background: #fafafa;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: #eee;
+            padding: 12px;
+            font-size: 0.9em;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        /* 提醒標籤顏色 */
+        .bg-warning { background-color: #fff3cd !important; color: #856404 !important; }
+        .bg-success { background-color: #d4edda !important; color: #155724 !important; }
+        .bg-danger { background-color: #f8d7da !important; color: #721c24 !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="record-card">
+        
+        <div id="status-bar" class="status-bar">
+            請輸入電話查詢客戶資料與回診紀錄
+        </div>
+
+        <div class="card-section">
+            <h3>客戶基本資料</h3>
+            <div class="row">
+                <div class="col-33">
+                    <label>客戶編號</label>
+                    <input type="text" id="custID" placeholder="點擊查詢自動生成" readonly style="background:#f1f3f5">
+                </div>
+                <div class="col-33">
+                    <label>客戶姓名</label>
+                    <input type="text" id="custName" placeholder="王小明">
+                </div>
+                <div class="col-33">
+                    <label>聯絡電話</label>
+                    <input type="tel" id="custPhone" placeholder="0912345678">
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="card-section">
+            <h3>本次驗光數據</h3>
+            <div class="row">
+                <div class="col-50 eye-box">
+                    <h4>右眼 (OD)</h4>
+                    <div class="data-grid">
+                        <span>SPH (度數)</span><input type="number" id="od_sph" step="0.25" placeholder="-1.00">
+                        <span>CYL (散光)</span><input type="number" id="od_cyl" step="0.25" placeholder="-0.50">
+                        <span>AXIS (軸度)</span><input type="number" id="od_axis" placeholder="180">
+                    </div>
+                </div>
+                <div class="col-50 eye-box">
+                    <h4>左眼 (OS)</h4>
+                    <div class="data-grid">
+                        <span>SPH (度數)</span><input type="number" id="os_sph" step="0.25" placeholder="-1.25">
+                        <span>CYL (散光)</span><input type="number" id="os_cyl" step="0.25" placeholder="-0.75">
+                        <span>AXIS (軸度)</span><input type="number" id="os_axis" placeholder="175">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn search-btn" onclick="searchCustomer()">查詢歷史紀錄</button>
+            <button class="btn save-btn" onclick="saveRecord()">儲存當次紀錄</button>
+        </div>
+
+        <div class="history-list">
+            <h3>歷史紀錄</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>右眼 (S/C/A)</th>
+                        <th>左眼 (S/C/A)</th>
+                        <th>備註</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <tr>
+                        <td colspan="4" style="color:#999">暫無搜尋資料</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 模擬資料庫 (未來可連動 Google Sheets)
+    const mockDatabase = {
+        "0912345678": {
+            id: "C2025052001",
+            name: "王小明",
+            history: [
+                { date: "2025-05-20", od: "-1.00/-0.50/180", os: "-1.00/-0.50/175", note: "初診" },
+                { date: "2024-05-20", od: "-0.75/-0.25/180", os: "-0.75/-0.25/170", note: "舊紀錄" }
+            ]
+        }
+    };
+
+    function searchCustomer() {
+        const phone = document.getElementById('custPhone').value;
+        const statusBar = document.getElementById('status-bar');
+        const tableBody = document.getElementById('historyTableBody');
+        
+        if (mockDatabase[phone]) {
+            const user = mockDatabase[phone];
+            document.getElementById('custID').value = user.id;
+            document.getElementById('custName').value = user.name;
+
+            // 計算距離上次的時間
+            const lastDate = new Date(user.history[0].date);
+            const today = new Date();
+            const diffMonths = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24 * 30));
+
+            // 更新狀態列
+            statusBar.innerText = `⚠️ 客戶上次檢查是在 ${diffMonths} 個月前 (${user.history[0].date})`;
+            statusBar.className = (diffMonths >= 12) ? "status-bar bg-danger" : "status-bar bg-warning";
+
+            // 填入表格
+            tableBody.innerHTML = user.history.map(item => `
+                <tr>
+                    <td>${item.date}</td>
+                    <td>${item.od}</td>
+                    <td>${item.os}</td>
+                    <td>${item.note}</td>
+                </tr>
+            `).join('');
+
+        } else {
+            alert("找不到此客戶，請手動輸入並建立新紀錄。");
+            statusBar.innerText = "新客戶紀錄中...";
+            statusBar.className = "status-bar bg-success";
+            tableBody.innerHTML = '<tr><td colspan="4">無歷史紀錄</td></tr>';
+            // 自動生成新編號
+            const newID = "C" + new Date().getTime().toString().slice(-10);
+            document.getElementById('custID').value = newID;
+        }
+    }
+
+    function saveRecord() {
+        alert("資料已暫存！此功能未來可對接資料庫或 Google Sheets 實現永久儲存。");
+    }
+</script>
+
+</body>
+</html>

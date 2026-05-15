@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專業無紙化視光管理系統</title>
+    <style>
+        /* 基礎樣式設定 */
+        * { box-sizing: border-box; font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; }
+        body { background-color: #f0f4f8; margin: 0; padding: 20px; color: #2d3436; }
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* 主卡片容器 */
+        .record-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #dcdde1;
+        }
+
+        /* 狀態列：即時提醒回診間隔 */
+        .status-bar {
+            background: #2f3640;
+            padding: 18px;
+            text-align: center;
+            font-weight: bold;
+            color: #f5f6fa;
+            font-size: 1em;
+            letter-spacing: 1px;
+            transition: all 0.4s ease;
+        }
+
+        .card-section { padding: 30px 45px; }
+        h3 { 
+            color: #0984e3; 
+            border-left: 6px solid #0984e3; 
+            padding-left: 15px; 
+            margin: 0 0 25px 0;
+            font-size: 1.4em;
+        }
+
+        /* 佈局系統 */
+        .row { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
+        .col { flex: 1; min-width: 180px; }
+        .col-half { flex: 2; min-width: 400px; }
+
+        /* 表單元素 */
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9em; color: #636e72; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #b2bec3;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus { border-color: #0984e3; outline: none; box-shadow: 0 0 0 3px rgba(9,132,227,0.1); }
+        input[readonly] { background-color: #dfe6e9; color: #2d3436; cursor: not-allowed; }
+
+        /* 視覺區塊區分 */
+        .area-blue { background-color: #f1f9ff; border-radius: 15px; padding: 25px; border: 1px solid #d1e9ff; }
+        .area-orange { background-color: #fffaf0; border-radius: 15px; padding: 25px; border: 1px solid #ffeaa7; }
+        
+        .data-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; align-items: center; }
+        .data-grid span { font-size: 0.85em; font-weight: bold; color: #636e72; }
+
+        /* 勾選清單 */
+        .checkbox-group { display: flex; gap: 25px; flex-wrap: wrap; margin-top: 10px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 15px; font-weight: 600; }
+        .checkbox-item input { width: auto; height: auto; cursor: pointer; }
+
+        /* 按鈕設計 */
+        .button-group { padding: 0 45px 45px; display: flex; gap: 20px; }
+        .btn { flex: 1; padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1.1em; transition: 0.3s; }
+        .btn-search { background: #0984e3; color: white; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); opacity: 0.9; }
+
+        /* 歷史表格 */
+        .history-list { padding: 45px; background: #f8f9fa; border-top: 2px solid #eee; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
+        th, td { padding: 15px; border: 1px solid #eee; text-align: center; font-size: 14px; }
+        th { background: #e9ecef; color: #2d3436; font-weight: bold; }
+
+        /* 狀態標籤 */
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; }
+        .bg-red { background-color: #eb4d4b !important; }
+        .bg-orange { background-color: #f0932b !important; }
+        .bg-green { background-color: #6ab04c !important; }
+        .bg-blue { background-color: #0984e3 !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="record-card">
+        <div id="status-bar" class="status-bar">
+            請輸入客戶電話以開始紀錄
+        </div>
+
+        <div class="card-section">
+            <h3>👤 客戶基本資料</h3>
+            <div class="row">
+                <div class="col"><label>客戶編號</label><input type="text" id="custID" placeholder="自動編碼" readonly></div>
+                <div class="col"><label>客戶姓名</label><input type="text" id="custName" placeholder="姓名"></div>
+                <div class="col"><label>聯絡電話</label><input type="tel" id="custPhone" placeholder="09xx-xxx-xxx"></div>
+                <div class="col"><label>出生日期 (生日)</label><input type="date" id="custBirthday"></div>
+                <div class="col"><label>本次檢查日期</label><input type="date" id="todayDate"></div>
+            </div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #eee; margin:0;">
+
+        <div class="card-section">
+            <div class="area-blue">
+                <h3>🧪 隱形眼鏡習慣 (CL Habits)</h3>
+                <div class="row">
+                    <div class="col-half">
+                        <label>目前配戴品牌 / 系列款式</label>
+                        <input type="text" id="cl_brand" placeholder="例：酷柏 珂朗清日拋、嬌生 歐舒適...">
+                    </div>
+                    <div class="col">
+                        <label>配戴頻率</label>
+                        <select id="cl_freq">
+                            <option value="每天">每天配戴</option>
+                            <option value="工作日">僅工作日配戴</option>
+                            <option value="偶爾">假日或偶爾配戴</option>
+                            <option value="不戴">完全不戴</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>平均每日時數</label>
+                        <input type="number" id="cl_hours" placeholder="小時">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <div class="area-orange">
+                <h3>👓 驗光數據 (Refraction)</h3>
+                <div class="row">
+                    <div class="col">
+                        <h4>右眼 (OD)</h4>
+                        <div class="data-grid">
+                            <span>SPH (度數)</span><input type="number" step="0.25" placeholder="-0.00">
+                            <span>CYL (散光)</span><input type="number" step="0.25" placeholder="-0.00">
+                            <span>AXIS (軸度)</span><input type="number" placeholder="180">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h4>左眼 (OS)</h4>
+                        <div class="data-grid">
+                            <span>SPH (度數)</span><input type="number" step="0.25" placeholder="-0.00">
+                            <span>CYL (散光)</span><input type="number" step="0.25" placeholder="-0.00">
+                            <span>AXIS (軸度)</span><input type="number" placeholder="175">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <h3>📝 本次處置與配鏡紀錄</h3>
+            <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" class="disp-check"> 換新鏡片</label>
+                <label class="checkbox-item"><input type="checkbox" class="disp-check"> 換新鏡架</label>
+                <label class="checkbox-item"><input type="checkbox" class="disp-check"> 購買隱形眼鏡</label>
+                <label class="checkbox-item"><input type="checkbox" class="disp-check"> 純驗光紀錄</label>
+            </div>
+            <div style="margin-top: 20px;">
+                <label>專業備註 (鏡片品牌、型號、特殊加工或客戶反饋)</label>
+                <textarea id="note" rows="2" placeholder="詳細描述本次處置內容..."></textarea>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-search" onclick="searchCustomer()">🔍 查詢客戶與回診歷史</button>
+            <button class="btn btn-save" onclick="saveData()">💾 儲存本次驗光紀錄</button>
+        </div>
+
+        <div class="history-list">
+            <h3>📋 歷史檢閱列表</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>右眼 (S/C/A)</th>
+                        <th>左眼 (S/C/A)</th>
+                        <th>配戴習慣與品牌</th>
+                        <th>處置狀態</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <tr><td colspan="5" style="color: #999; padding: 30px;">請輸入電話並點擊查詢...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 自動設定今天日期
+    document.getElementById('todayDate').valueAsDate = new Date();
+
+    // 模擬資料庫 (實務上建議串接雲端資料庫)
+    const mockDB = {
+        "0912345678": {
+            id: "C-20250101-001",
+            name: "陳小明",
+            birthday: "1995-10-24",
+            cl_brand: "酷柏 珂朗清日拋",
+            cl_freq: "每天",
+            cl_hours: 10,
+            history: [
+                { date: "2025-05-15", od: "-4.25 / -0.50 / 180", os: "-4.50 / -0.75 / 175", cl: "酷柏 (10hr)", disp: "換鏡片" },
+                { date: "2024-05-10", od: "-4.00 / -0.50 / 180", os: "-4.25 / -0.50 / 175", cl: "海昌 (8hr)", disp: "純驗光" }
+            ]
+        }
+    };
+
+    function searchCustomer() {
+        const phone = document.getElementById('custPhone').value;
+        const status = document.getElementById('status-bar');
+        const hBody = document.getElementById('historyBody');
+
+        if (mockDB[phone]) {
+            const user = mockDB[phone];
+            // 帶入客戶資料
+            document.getElementById('custID').value = user.id;
+            document.getElementById('custName').value = user.name;
+            document.getElementById('custBirthday').value = user.birthday;
+            document.getElementById('cl_brand').value = user.cl_brand;
+            document.getElementById('cl_freq').value = user.cl_freq;
+            document.getElementById('cl_hours').value = user.cl_hours;
+
+            // 計算時間間隔
+            const lastVisit = new Date(user.history[0].date);
+            const months = Math.floor((new Date() - lastVisit) / (1000 * 60 * 60 * 24 * 30));
+            
+            status.innerText = `⏳ 回診提醒：上次檢查日期為 ${user.history[0].date}，已相隔 ${months} 個月`;
+            status.style.backgroundColor = (months >= 12) ? "#eb4d4b" : "#f0932b";
+
+            // 渲染歷史表格
+            hBody.innerHTML = user.history.map(h => `
+                <tr>
+                    <td>${h.date}</td>
+                    <td>${h.od}</td>
+                    <td>${h.os}</td>
+                    <td>${h.cl}</td>
+                    <td><span class="badge ${h.disp === '換鏡片' ? 'bg-blue' : 'bg-green'}">${h.disp}</span></td>
+                </tr>
+            `).join('');
+        } else {
+            alert("找不到該客戶，將建立新編號。");
+            document.getElementById('custID').value = "NEW-" + Math.floor(Math.random()*10000);
+            status.innerText = "🆕 新客戶：請完整填寫各項問診與數據紀錄";
+            status.style.backgroundColor = "#6ab04c";
+            hBody.innerHTML = '<tr><td colspan="5">該客戶目前尚無歷史紀錄</td></tr>';
+        }
+    }
+
+    function saveData() {
+        const name = document.getElementById('custName').value;
+        if (!name) {
+            alert("請輸入姓名後再儲存");
+            return;
+        }
+        alert("資料儲存成功！(本演示版僅輸出至 Console)");
+    }
+</script>
+
+</body>
+</html>
