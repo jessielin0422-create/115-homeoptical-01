@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Pinterest 植物美學牆 - 視覺優化版</title>
+     <style>
+          body {
+               background-color: #f7f7f7; /* 溫和的淺灰底 */
+               margin: 0;
+               padding: 20px;
+               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          }
+
+          /* 🌟 Pinterest 瀑布流大外框 */
+          .pinterest-container {
+               width: 90%;
+               margin: auto;
+               column-count: 4;     /* 預設 4 欄排版 */
+               column-gap: 20px;    /* 欄與欄的左右間距 */
+          }
+
+          /* 🌟 每張獨立的卡片 */
+          .pin-item {
+               break-inside: avoid; /* 避免卡片內容被切斷 */
+               margin-bottom: 20px; /* 卡片上下的間距 */
+               background-color: white;
+               border-radius: 16px;
+               overflow: hidden;    /* 讓圓角切齊裡面的植物圖片 */
+               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+               transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+               position: relative;  /* 🌟 黃金組合：給右上角按鈕當基準點 */
+               cursor: pointer;
+          }
+
+          /* 🌟 當滑鼠移入卡片時：整體上浮、陰影加深 */
+          .pin-item:hover {
+               transform: translateY(-4px);
+               box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+          }
+
+          /* 🌟 植物圖片樣式優化 */
+          .pin-image {
+               width: 100%;
+               display: block;      /* 移除圖片下方的預設神祕空白 */
+               height: auto;        /* 讓圖片照原本比例縮放，自然形成瀑布流的高矮效果 */
+               transition: transform 0.5s ease; /* 幫圖片縮放加上流暢動態 */
+          }
+
+          /* 🌟 當滑鼠移入卡片時：讓內部的植物圖片微微放大，增加層次感 */
+          .pin-item:hover .pin-image {
+               transform: scale(1.03);
+          }
+
+          /* 卡片下方的文字區 */
